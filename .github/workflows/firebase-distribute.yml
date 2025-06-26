@@ -1,0 +1,39 @@
+name: Firebase App Distribution
+
+# Trigger this workflow when code is pushed to main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout source code
+      - uses: actions/checkout@v3
+
+      # Step 2: Set up Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.4' # Replace with your Flutter version
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Step 4: Build APK
+      - name: Build release APK
+        run: flutter build apk --release
+
+      # Step 5: Upload to Firebase App Distribution
+      - name: Upload to Firebase App Distribution
+        run: |
+          npm install -g firebase-tools
+          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
+            --app 1:279611555173:android:caa82acd222acd4e77358c \
+            --token ${{ secrets.FIREBASE_TOKEN }} \
+            --groups "testers" \
+            --release-notes "Automated build from GitHub Actions"
